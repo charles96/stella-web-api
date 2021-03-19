@@ -9,11 +9,11 @@ using Newtonsoft.Json;
 
 namespace stella_web_api
 {
-    public static class Function1
+    public static class Compliment
     {
-        [FunctionName("Function1")]
+        [FunctionName("write")]
         public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req,
             ILogger log)
         {
             log.LogInformation("C# HTTP trigger function processed a request..");
