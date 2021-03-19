@@ -11,7 +11,7 @@ namespace stella_web_api
 {
     public static class Stella
     {
-        [FunctionName("compliment")]
+        [FunctionName("ComplimentWriteRunAsync")]
         public static async Task<IActionResult> ComplimentWriteRunAsync(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = "compliment/Write")] HttpRequest req,
             ILogger log)
@@ -31,7 +31,7 @@ namespace stella_web_api
             return new OkObjectResult(responseMessage);
         }
 
-        [FunctionName("compliment")]
+        [FunctionName("ComplimentReadRunAsync")]
         public static async Task<IActionResult> ComplimentReadRunAsync(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = "compliment/read")] HttpRequest req,
             ILogger log)
