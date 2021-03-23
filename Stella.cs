@@ -15,7 +15,7 @@ namespace stella_web_api
     {
         [FunctionName("ComplimentWriteRunAsync")]
         public static async Task<IActionResult> ComplimentWriteRunAsync(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = "compliment/Write")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "compliment/Write")] HttpRequest req,
             ILogger log)
         {
             log.LogInformation("C# HTTP trigger function processed a request..");
@@ -41,7 +41,7 @@ namespace stella_web_api
 
         [FunctionName("ComplimentReadRunAsync")]
         public static async Task<IActionResult> ComplimentReadRunAsync(
-            [HttpTrigger(AuthorizationLevel.Function, "post", Route = "compliment/read")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "compliment/read")] HttpRequest req,
             ILogger log)
         {
             log.LogInformation("C# HTTP trigger function processed a request..");
