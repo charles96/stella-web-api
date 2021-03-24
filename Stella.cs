@@ -28,10 +28,11 @@ namespace stella_web_api
 
             ComplimentResponse ret = new ComplimentResponse();
 
-            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
 
             try
             {
+                string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+
                 var request = JsonConvert.DeserializeObject<ComplimentRequest>(requestBody);
                 var res = await StellaRepository.ComplimentWriteAsync(request);
 
@@ -66,13 +67,15 @@ namespace stella_web_api
 
             string name = req.Query["name"];
 
+            var res = await StellaRepository.ComplimentReadAsync();
+
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
             dynamic data = JsonConvert.DeserializeObject(requestBody);
             name = name ?? data?.name;
 
             string responseMessage = string.IsNullOrEmpty(name)
                 ? "This HTTP triggered function executed succe44ssfully. Pass a name in the query string or in the request body for a personalized response."
-                : $"Hello, {name}. This HTTP triggered function executed successfully.";
+                : $"Hello, {res.from_luna_email}. This HTTP triggered function executed successfully.";
 
             return new OkObjectResult(responseMessage);
         }
