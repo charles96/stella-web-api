@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Threading.Tasks;
 using Dapper;
 using MySql.Data.MySqlClient;
@@ -9,13 +9,35 @@ namespace stella_web_api.Repositories
     public class StellaRepository
     {
 
-        public async Task<IEnumerable<Compliment>> ComplimentAsync()
+        public static async Task<int> ComplimentWriteAsync(ComplimentRequest complimentRequest)
         {
-            IEnumerable<Compliment> ret = null;
+            int ret = 0;
 
             using (var conn = new MySqlConnection("Data Source=20.194.5.138;port=3306;User ID=charles;Password=96Hic121@@;Initial Catalog=stella;SslMode=None;"))
             {
-                ret = await conn.QueryAsync<Compliment>("Select * FROM tb_compliment");
+                ret = await conn.ExecuteAsync
+                    (@"
+                        INSERT INTO 
+                            tb_compliment 
+                            (
+                                from_luna_email,
+                                to_luna_email,
+                                compliment_contents, 
+                                compliment_de
+                            ) VALUES
+                            (
+                                @from_luna_email,
+                                @to_luna_email,
+                                @compliment_contents,
+                                @compliment_de
+                            )"
+                , new
+                {
+                    from_luna_email = complimentRequest.from_luna_email,
+                    to_luna_email = complimentRequest.to_luna_email,
+                    compliment_contents = complimentRequest.compliment_contents,
+                    compliment_de = DateTime.Now
+                });
             }
 
             return ret;
