@@ -11,6 +11,7 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
+using stella_web_api.Extentions;
 using stella_web_api.Models;
 using stella_web_api.Repositories;
 
@@ -29,18 +30,21 @@ namespace stella_web_api
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = "competitor/read")] HttpRequest req,
             ILogger log)
         {
-            log.LogInformation("C# HTTP trigger function processed a request..");
+            log.LogInformation("CompetitorReadAsync request");
 
-            CompetitorResponse ret = new CompetitorResponse();
+            var ret = new CompetitorResponse();
 
             try
             {
                 var res = await StellaRepository.CompetitorReadAsync();
 
                 ret.code = 1;
-                ret.luna_email = res.luna_email;
-                ret.reg_dt = res.reg_dt;
-                ret.content = res.content;
+                ret.data = new Competitor()
+                {
+                    luna_email = res.luna_email,
+                    reg_dt = res.reg_dt,
+                    content = res.content
+                };
             }
             catch (MySqlException ex)
             {
@@ -53,12 +57,7 @@ namespace stella_web_api
                 ret.message = ex.Message;
             }
 
-            var json = JsonConvert.SerializeObject(ret, Formatting.Indented);
-
-            return new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent(json, Encoding.UTF8, "application/json")
-            };
+            return ret.ObjectToHttpMessage();
         }
 
 
@@ -75,7 +74,7 @@ namespace stella_web_api
         {
             log.LogInformation("C# HTTP trigger function processed a request..");
 
-            ComplimentResponse ret = new ComplimentResponse();
+            var ret = new ComplimentResponse();
 
             try
             {
@@ -98,12 +97,7 @@ namespace stella_web_api
                 ret.message = ex.Message;
             }
 
-            var json = JsonConvert.SerializeObject(ret, Formatting.Indented);
-
-            return new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent(json, Encoding.UTF8, "application/json")
-            };
+            return ret.ObjectToHttpMessage();
         }
 
 
