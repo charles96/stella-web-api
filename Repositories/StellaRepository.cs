@@ -54,5 +54,18 @@ namespace stella_web_api.Repositories
 
             return ret;
         }
+
+        public static async Task<CompetitorResponse> CompetitorReadAsync()
+        {
+            CompetitorResponse ret = null;
+
+            using (var conn = new MySqlConnection("Data Source=20.194.5.138;port=3306;User ID=charles;Password=96Hic121@@;Initial Catalog=stella;SslMode=None;"))
+            {
+                ret = await conn.QueryFirstOrDefaultAsync<CompetitorResponse>("SELECT * FROM tb_competitor ORDER BY reg_dt DESC LIMIT 1");
+            }
+
+            return ret;
+        }
+
     }
 }
