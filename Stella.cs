@@ -156,6 +156,7 @@ namespace stella_web_api
                     ret = (from item in response
                            where item.send_month.Equals(inputMonth.ToString("yyyyMM"))
                            let total = item.api_send_count + item.auto_send_count + item.manual_send_count
+                           let gap = (float)total - (float)preCount
                            select new GetStatisticAlimtalkMonthlyResponse()
                            {
                                Data = new StatisticAlimtalkMonthly()
@@ -164,7 +165,8 @@ namespace stella_web_api
                                    AutoSendCount = item.auto_send_count,
                                    ManualSendCount = item.manual_send_count,
                                    TotalSendCount = total,
-                                   Increase = (((float)total - (float)preCount) / (float)total) * 100
+                                   Gap = gap,
+                                   Increase = (gap / (float)total) * 100
                                },
                                code = 1
                            }).FirstOrDefault();
