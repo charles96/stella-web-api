@@ -1,8 +1,7 @@
 using System;
 using System.IO;
-using System.Net;
+using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -72,7 +71,7 @@ namespace stella_web_api
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = "compliment/write")] HttpRequest req,
             ILogger log)
         {
-            log.LogInformation("C# HTTP trigger function processed a request..");
+            log.LogInformation("ComplimentWriteRunAsync request..");
 
             var ret = new ComplimentResponse();
 
@@ -127,6 +126,63 @@ namespace stella_web_api
                 : $"Hello, {res.from_luna_email}. This HTTP triggered function executed successfully.";
 
             return new OkObjectResult(responseMessage);
+        }
+
+        [FunctionName("GetStatisticAlimtalkMonthlyRunAsync")]
+        public static async Task<HttpResponseMessage> GetStatisticAlimtalkMonthlyRunAsync(
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "statistics/alimtalk/monthly")] HttpRequest req,
+            ILogger log)
+        {
+            log.LogInformation("GetStatisticAlimtalkMonthlyRunAsync request..");
+
+            GetStatisticAlimtalkMonthlyResponse ret = new GetStatisticAlimtalkMonthlyResponse();
+
+            string month = req.Query["month"];
+
+            try
+            {
+                var inputMonth = Convert.ToDateTime(month);
+                var prevMonth = inputMonth.AddMonths(-1);
+
+                var response = await StellaRepository.GetStatisticsAlimtalkMonthlyAsync(prevMonth.ToString("yyyyMM"), inputMonth.ToString("yyyyMM"));
+
+                if (response.Count() > 0)
+                {
+                    var preCount = (from item in response
+                                    where item.send_month.Equals(prevMonth.ToString("yyyyMM"))
+                                    let total = item.api_send_count + item.auto_send_count + item.manual_send_count
+                                    select total).FirstOrDefault();
+
+                    ret = (from item in response
+                           where item.send_month.Equals(inputMonth.ToString("yyyyMM"))
+                           let total = item.api_send_count + item.auto_send_count + item.manual_send_count
+                           select new GetStatisticAlimtalkMonthlyResponse()
+                           {
+                               Data = new StatisticAlimtalkMonthly()
+                               {
+                                   ApiSendCount = item.api_send_count,
+                                   AutoSendCount = item.auto_send_count,
+                                   ManualSendCount = item.manual_send_count,
+                                   TotalSendCount = total,
+                                   Increase = (((float)total - (float)preCount) / (float)total) * 100
+                               },
+                               code = 1
+                           }).FirstOrDefault();
+                }
+                else
+                {
+                    ret.code = 2;
+                }
+
+            }
+            catch (FormatException ex)
+            {
+                log.LogError($"GetStatisticAlimtalkMonthlyRunAsync {ex.Message}");
+                ret.code = 3;
+            }
+
+
+            return ret.ObjectToHttpMessage();
         }
     }
 }

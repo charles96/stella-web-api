@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using MySql.Data.MySqlClient;
@@ -67,5 +69,32 @@ namespace stella_web_api.Repositories
             return ret;
         }
 
+        public static async Task<IEnumerable<StatisticsAlimtalkMonthly>> GetStatisticsAlimtalkMonthlyAsync(string prevMonth, string curMonth)
+        {
+            IEnumerable<StatisticsAlimtalkMonthly> ret = null;
+
+            using (var conn = new MySqlConnection("Data Source=20.194.5.138;port=3306;User ID=charles;Password=96Hic121@@;Initial Catalog=stella;SslMode=None;"))
+            {
+                ret = await conn.QueryAsync<StatisticsAlimtalkMonthly>
+                    (@"
+                        SELECT 
+                            send_month,
+                            auto_send_count,
+                            manual_send_count,
+                            api_send_count 
+                        FROM 
+                            tb_statistics_alimtalk_monthly 
+                        WHERE 
+                            send_month IN (@prev_month,@cur_Month)",
+                            new 
+                            { 
+                                prev_month = prevMonth,
+                                cur_Month = curMonth
+                            });
+            }
+
+            return ret;
+
+        }
     }
 }
