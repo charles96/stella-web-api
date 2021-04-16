@@ -212,20 +212,20 @@ namespace stella_web_api
 
             try
             {
-                var inputMonth = Convert.ToDateTime(day);
-                var prevMonth = inputMonth.AddMonths(-1);
+                var inputDay = Convert.ToDateTime(day);
+                var prevDay = inputDay.AddDays(-1);
 
-                var response = await StellaRepository.GetStatisticsAlimtalkDailyAsync(prevMonth.ToString("yyyyMMdd"), inputMonth.ToString("yyyyMMdd"));
+                var response = await StellaRepository.GetStatisticsAlimtalkDailyAsync(prevDay.ToString("yyyyMMdd"), inputDay.ToString("yyyyMMdd"));
 
                 if (response.Count() > 0)
                 {
                     var preCount = (from item in response
-                                    where item.send_day.Equals(prevMonth.ToString("yyyyMMdd"))
+                                    where item.send_day.Equals(prevDay.ToString("yyyyMMdd"))
                                     let total = item.api_send_count + item.auto_send_count + item.manual_send_count
                                     select total).FirstOrDefault();
 
                     ret = (from item in response
-                           where item.send_day.Equals(inputMonth.ToString("yyyyMMdd"))
+                           where item.send_day.Equals(inputDay.ToString("yyyyMMdd"))
                            let total = item.api_send_count + item.auto_send_count + item.manual_send_count
                            let gap = (float)total - (float)preCount
                            select new GetStatisticAlimtalkDaillyResponse()
