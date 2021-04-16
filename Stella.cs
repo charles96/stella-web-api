@@ -128,6 +128,12 @@ namespace stella_web_api
             return new OkObjectResult(responseMessage);
         }
 
+        /// <summary>
+        /// 알림톡 월별 조회
+        /// </summary>
+        /// <param name="req"></param>
+        /// <param name="log"></param>
+        /// <returns></returns>
         [FunctionName("GetStatisticAlimtalkMonthlyRunAsync")]
         public static async Task<HttpResponseMessage> GetStatisticAlimtalkMonthlyRunAsync(
             [HttpTrigger(AuthorizationLevel.Function, "get", Route = "statistics/alimtalk/monthly")] HttpRequest req,
@@ -135,7 +141,7 @@ namespace stella_web_api
         {
             log.LogInformation("GetStatisticAlimtalkMonthlyRunAsync request..");
 
-            GetStatisticAlimtalkMonthlyResponse ret = new GetStatisticAlimtalkMonthlyResponse();
+            var ret = new GetStatisticAlimtalkMonthlyResponse();
 
             string month = req.Query["month"];
 
@@ -180,6 +186,71 @@ namespace stella_web_api
             catch (FormatException ex)
             {
                 log.LogError($"GetStatisticAlimtalkMonthlyRunAsync {ex.Message}");
+                ret.code = 3;
+            }
+
+
+            return ret.ObjectToHttpMessage();
+        }
+
+        /// <summary>
+        /// 알림톡 일별 조회
+        /// </summary>
+        /// <param name="req"></param>
+        /// <param name="log"></param>
+        /// <returns></returns>
+        [FunctionName("GetStatisticAlimtalkDailyRunAsync")]
+        public static async Task<HttpResponseMessage> GetStatisticAlimtalkDailyRunAsync(
+            [HttpTrigger(AuthorizationLevel.Function, "get", Route = "statistics/alimtalk/daily")] HttpRequest req,
+            ILogger log)
+        {
+            log.LogInformation("GetStatisticAlimtalkDailyRunAsync request..");
+
+            var ret = new GetStatisticAlimtalkDaillyResponse();
+
+            string day = req.Query["day"];
+
+            try
+            {
+                var inputMonth = Convert.ToDateTime(day);
+                var prevMonth = inputMonth.AddMonths(-1);
+
+                var response = await StellaRepository.GetStatisticsAlimtalkDailyAsync(prevMonth.ToString("yyyyMMdd"), inputMonth.ToString("yyyyMMdd"));
+
+                if (response.Count() > 0)
+                {
+                    var preCount = (from item in response
+                                    where item.send_day.Equals(prevMonth.ToString("yyyyMMdd"))
+                                    let total = item.api_send_count + item.auto_send_count + item.manual_send_count
+                                    select total).FirstOrDefault();
+
+                    ret = (from item in response
+                           where item.send_day.Equals(inputMonth.ToString("yyyyMMdd"))
+                           let total = item.api_send_count + item.auto_send_count + item.manual_send_count
+                           let gap = (float)total - (float)preCount
+                           select new GetStatisticAlimtalkDaillyResponse()
+                           {
+                               Data = new StatisticAlimtalkDailly()
+                               {
+                                   ApiSendCount = item.api_send_count,
+                                   AutoSendCount = item.auto_send_count,
+                                   ManualSendCount = item.manual_send_count,
+                                   TotalSendCount = total,
+                                   Gap = gap,
+                                   Increase = (gap / (float)total) * 100
+                               },
+                               code = 1
+                           }).FirstOrDefault();
+                }
+                else
+                {
+                    ret.code = 2;
+                }
+
+            }
+            catch (FormatException ex)
+            {
+                log.LogError($"GetStatisticAlimtalkDailyRunAsync {ex.Message}");
                 ret.code = 3;
             }
 

@@ -96,5 +96,33 @@ namespace stella_web_api.Repositories
             return ret;
 
         }
+
+
+        public static async Task<IEnumerable<StatisticsAlimtalkDaily>> GetStatisticsAlimtalkDailyAsync(string prevDay, string curDay)
+        {
+            IEnumerable<StatisticsAlimtalkDaily> ret = null;
+
+            using (var conn = new MySqlConnection("Data Source=20.194.5.138;port=3306;User ID=charles;Password=96Hic121@@;Initial Catalog=stella;SslMode=None;"))
+            {
+                ret = await conn.QueryAsync<StatisticsAlimtalkDaily>
+                    (@"
+                        SELECT 
+                            send_day,
+                            auto_send_count,
+                            manual_send_count,
+                            api_send_count 
+                        FROM 
+                            tb_statistics_alimtalk_daily 
+                        WHERE 
+                            send_day IN (@prev_day,@cur_day)",
+                            new
+                            {
+                                prev_day = prevDay,
+                                cur_day = curDay
+                            });
+            }
+
+            return ret;
+        }
     }
 }
