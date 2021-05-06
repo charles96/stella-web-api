@@ -124,5 +124,42 @@ namespace stella_web_api.Repositories
 
             return ret;
         }
+
+        public static async Task<int> SetStatisticsAlimtalkDailyAsync(StatisticsAlimtalkDaily statisticsAlimtalkDaily)
+        {
+            int ret = 0;
+
+            using (var conn = new MySqlConnection("Data Source=20.194.5.138;port=3306;User ID=charles;Password=96Hic121@@;Initial Catalog=stella;SslMode=None;"))
+            {
+                ret = await conn.ExecuteAsync
+                    (@"
+                        INSERT INTO 
+                            tb_statistics_alimtalk_daily 
+                            (
+                                send_day, 
+                                auto_send_count,
+                                manual_send_count,
+                                api_send_count,
+                                reg_dt
+                            ) VALUES
+                            (
+                                @send_day,
+                                @auto_send_count,
+                                @manual_send_count,
+                                @api_send_count,
+                                @reg_dt
+                            )"
+                , new
+                {
+                    send_day = statisticsAlimtalkDaily.send_day,
+                    auto_send_count = statisticsAlimtalkDaily.auto_send_count,
+                    manual_send_count = statisticsAlimtalkDaily.manual_send_count,
+                    api_send_count = statisticsAlimtalkDaily.api_send_count,
+                    reg_dt = DateTime.Now
+                });
+            }
+
+            return ret;
+        }
     }
 }

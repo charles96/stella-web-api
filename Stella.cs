@@ -252,10 +252,76 @@ namespace stella_web_api
             {
                 log.LogError($"GetStatisticAlimtalkDailyRunAsync {ex.Message}");
                 ret.code = 3;
+                ret.message = ex.Message;
+            }
+            catch (MySqlException ex)
+            {
+                log.LogError($"SetStatisticAlimtalkDailyRunAsync {ex.Message}");
+                ret.code = 4;
+                ret.message = ex.Message;
+            }
+            catch (Exception ex)
+            {
+                log.LogError($"SetStatisticAlimtalkDailyRunAsync {ex.Message}");
+                ret.code = 5;
+                ret.message = ex.Message;
             }
 
 
             return ret.ObjectToHttpMessage();
+        }
+
+        /// <summary>
+        /// 일별 알림톡 데이터 입력
+        /// </summary>
+        /// <param name="req"></param>
+        /// <param name="log"></param>
+        /// <returns></returns>
+        [FunctionName("SetStatisticAlimtalkDailyRunAsync")]
+        public static async Task<HttpResponseMessage> SetStatisticAlimtalkDailyRunAsync(
+            [HttpTrigger(AuthorizationLevel.Function, "post", Route = "statistics/alimtalk/daily/write")] HttpRequest req,
+            ILogger log)
+        {
+            log.LogInformation("SetStatisticAlimtalkDailyRunAsync request..");
+                        
+            var ret = new BaseResponse();
+
+            try
+            {
+                string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+
+                var request = JsonConvert.DeserializeObject<StatisticsAlimtalkDaily>(requestBody);
+                var res = await StellaRepository.SetStatisticsAlimtalkDailyAsync(request);
+
+                if (res >= 1) ret.code = 1;
+
+            }
+            catch (FormatException ex)
+            {
+                log.LogError($"SetStatisticAlimtalkDailyRunAsync {ex.Message}");
+                ret.code = 3;
+                ret.message = ex.Message;
+            }
+            catch (MySqlException ex)
+            {
+                log.LogError($"SetStatisticAlimtalkDailyRunAsync {ex.Message}");
+                ret.code = 4;
+                ret.message = ex.Message;
+            }
+            catch (Exception ex)
+            {
+                log.LogError($"SetStatisticAlimtalkDailyRunAsync {ex.Message}");
+                ret.code = 5;
+                ret.message = ex.Message;
+            }
+
+            return ret.ObjectToHttpMessage();
+        }
+
+        public static string GetEnvironmentVariable(string name)
+        {
+            return name + ": " +
+                System.Environment.GetEnvironmentVariable(name, EnvironmentVariableTarget.Process);
         }
     }
 }
